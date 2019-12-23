@@ -114,14 +114,14 @@ void __feature_ctrl_msr_set(void) {
 
     uint64_t feature_ctrl;
     uint64_t req;
-    req = FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX 
-          | FEATURE_CONTROL_LOCKED;
+    req = FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX;
+    req |= FEATURE_CONTROL_LOCKED;
 
     rdmsrl(MSR_IA32_FEATURE_CONTROL, feature_ctrl);
-    printk(KERN_INFO "[BITSV] rdmsr: %ld", (long)feature_ctrl);
+    printk(KERN_INFO "[BITSV] rdmsr: %ld After mod: %ld", (long)feature_ctrl, (long)(feature_ctrl | req));
 
     if ((feature_ctrl & req) != req) {
-        wrmsrl(MSR_IA32_FEATURE_CONTROL, feature_ctrl | req);
+        wrmsr(MSR_IA32_FEATURE_CONTROL, feature_ctrl | req, 0);
     }
 }
 
@@ -142,7 +142,7 @@ void __feature_ctrl_msr_set(void) {
 
 void __set_fixed_crx(void) {
     unsigned long cr0, cr4; /* guaranteed to be at least 32 bit (TODO: why not use uint64_t?) */
-    uint64_t val;
+    unsigned long long val;
     asm volatile ("mov %%cr0, %0" : "=r"(cr0) : : "memory");
     rdmsrl(MSR_IA32_VMX_CR0_FIXED1, val);
     cr0 &= val;
@@ -182,13 +182,13 @@ uint64_t __alloc_vmxon_region(uint64_t* vmxon_phy_region) {
     uint64_t *vmxon_region;
 
     vmxon_region = kzalloc(CUST_PAGE_SIZE, GFP_KERNEL);
-    if (!vmxon_region) {
+    if (vmxon_region==NULL) {
         printk(KERN_INFO "[BITSV] Error allocating VMXON region");
         return 0;
     }
 
     *vmxon_phy_region = __pa(vmxon_region);
-    printk(KERN_INFO "[BITSV] VMXON region physical address: %lld", (unsigned long long)vmxon_phy_region);
+    printk(KERN_INFO "[BITSV] VMXON region physical address: %lld", (unsigned long long)*vmxon_phy_region);
     /* init the VMXON region */
     __init_vmxon_region(vmxon_region);
 
@@ -205,6 +205,7 @@ uint64_t __alloc_vmxon_region(uint64_t* vmxon_phy_region) {
  */
 
 void __init_vmxon_region(uint64_t *vmxon_region) {
+    *(uint32_t *)vmxon_region = 0;
     *(uint32_t *)vmxon_region = vmcs_rev_id(); 
 }
 
@@ -228,6 +229,7 @@ static inline int __vmxon(uint64_t phya) {
 int set_vmx_op(void) {
     uint64_t phya; 
     uint32_t ret;
+    int i=0;
     __set_cr4_bit13();
     __feature_ctrl_msr_set();
     __set_fixed_crx();
@@ -235,12 +237,14 @@ int set_vmx_op(void) {
     ret = __alloc_vmxon_region(&phya);
 
     if (!ret) return 0; 
-
-    if(__vmxon(phya)) {
-        return 1;
-    } else {
-        return 0;
+   
+    while (i < 2) {
+        if(__vmxon(phya)) {
+            return 1;
+        }
+        i++; 
     }
+    return 0;
 }
 
 /**

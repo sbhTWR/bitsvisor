@@ -1,14 +1,16 @@
 #include <linux/module.h>
 
+#define X86_CR4_VMXE_BIT	                        13 /* enable VMX virtualization */
+#define X86_CR4_VMXE		                        _BITUL(X86_CR4_VMXE_BIT)
 #define FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX	(1<<2)
 #define FEATURE_CONTROL_LOCKED				        (1<<0)
 #define MSR_IA32_FEATURE_CONTROL                    0x0000003a
 
-#define MSR_IA32_VMX_BASIC              0x00000480
-#define MSR_IA32_VMX_CR0_FIXED0         0x00000486
-#define MSR_IA32_VMX_CR0_FIXED1         0x00000487
-#define MSR_IA32_VMX_CR4_FIXED0         0x00000488
-#define MSR_IA32_VMX_CR4_FIXED1         0x00000489
+#define MSR_IA32_VMX_BASIC                          0x00000480
+#define MSR_IA32_VMX_CR0_FIXED0                     0x00000486
+#define MSR_IA32_VMX_CR0_FIXED1                     0x00000487
+#define MSR_IA32_VMX_CR4_FIXED0                     0x00000488
+#define MSR_IA32_VMX_CR4_FIXED1                     0x00000489
 
 #define CUST_PAGE_SIZE 4096
 
