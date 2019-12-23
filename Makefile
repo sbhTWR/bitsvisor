@@ -16,5 +16,5 @@ else
         # called from kernel build system: just declare what our modules are
 		# see https://stackoverflow.com/questions/16701658/kernel-module-with-multiple-files-unknown-symbol?rq=1
 		obj-m := bitsvisorko.o
-		bitsvisorko-objs := vmx.o bitsvisor.o
+		bitsvisorko-objs := vmx.o vmcs.o bitsvisor.o
 endif
