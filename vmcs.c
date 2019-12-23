@@ -42,3 +42,7 @@ static inline int __vmptrld(uint64_t* vmcs_region) {
 
     return ret;    
 }
+
+/**
+ * vmread asm
+ */ 
