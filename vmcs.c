@@ -22,27 +22,16 @@ int __alloc_vmcs_region(uint64_t* vmcs_region) {
 }
 
 /**
- * VMPTRLD - Load pointer to VMCS
- * Marks current-VMCS pointer valid and sets to the physical
- * address in the instruction operand. Fails if:
- * - operand is not properly aligned
- * - if unsupported physical-address bits are set
- * - if equal to the VMXON pointer
- * - revision identifier [bits 30:0] of the aligned memory do not match with process revision identifier
+ * TODO: 
+ * 1. Using vmread and vmwrite, set different control fields in VMCS for:
+ *   -> VM-execution
+ *   -> VM-exit 
+ *   -> VM-entry
+ * 2. Initialize guest and the host state area in VCMS (laborious job!)
+ *    -> define functions for accessing CR3 and CR4 registers.
+ *    -> set various segment registers values.
+ * 3. Define functions for freeing allocated VMCS and VMXON regions using
+ *    kfree()
  */ 
 
-static inline int __vmptrld(uint64_t* vmcs_region) {
-    vmcs_pa = __pa(vmcs_region);
-    uint8_t ret;
 
-    asm volatile ("vmptrld %[pa]; setna %[ret]"
-        : [ret]"=rm"(ret)
-        : [pa]"m"(vmcs_pa)
-        : "cc", "memory");
-
-    return ret;    
-}
-
-/**
- * vmread asm
- */ 

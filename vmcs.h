@@ -49,12 +49,22 @@ static inline int vmread(uint64_t encoding, uint64_t *value)
 }
 
 /**
+ * Note on performance of VMREAD/VMWRITE
+ * VMREAD/VMWRITE are slower than regular memory read/write operations.
+ * This is because regular memory operations are handled with dedicated hardware because
+ * they are used regularly. Most of the workloads do not spent time modifying special
+ * CPU control registers, so they are often not optimized. For example, some of these 
+ * instructions might decode to several micro-ops from the microcode ROM. 
+ */
+
+/**
  * VMWRITE - write to the Vitual Machine Control Structure (VMCS)
  * In VMX root operation, the instruction writes to the current VMCS
  * If executed in VMX non-root operation, the instruction writes to the VMCS referenced by VMCS 
  * link pointer field in the current VMCS.
  * 
  * VMCS field is specified by the VMCS-field encoding 
+ * 
  */ 
 
 static inline int vmwrite(uint64_t encoding, uint64_t value)
