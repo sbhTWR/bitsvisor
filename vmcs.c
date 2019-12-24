@@ -41,8 +41,6 @@ void __free_vmcs_region(uint64_t* vmcs_region) {
  * 2. Initialize guest and the host state area in VCMS (laborious job!)
  *    -> define functions for accessing CR3 and CR4 registers.
  *    -> set various segment registers values.
- * 3. Define functions for freeing allocated VMCS and VMXON regions using
- *    kfree()
  */ 
 
 
