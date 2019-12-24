@@ -4,7 +4,7 @@ The motivation behind the project is to learn about virtualization and how hyper
 * Inline assembly (importance of extended assembly, which resulted in a [stackoverflow question](https://stackoverflow.com/questions/59442341/ubuntu-freezes-completely-on-executing-this-inline-asm/))
 * How to access registers (such as CR4) using inline assembly.
 * VT-x instructions, MSRs and how to access them.
-* How to allocate kernel memory and importane of `__pa()` (virtual to physical address translation in kernel)
+* How to allocate kernel memory and importance of `__pa()` (virtual to physical address translation in kernel)
 
 ### Features
 Not much yet. Can enter VMX mode and return from it as of now.
