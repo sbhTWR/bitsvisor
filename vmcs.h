@@ -1,3 +1,5 @@
+#include <linux/module.h>
+
 int __alloc_vmcs_region(uint64_t* vmcs_region);
 
 /**
@@ -11,8 +13,9 @@ int __alloc_vmcs_region(uint64_t* vmcs_region);
  */ 
 
 static inline int __vmptrld(uint64_t* vmcs_region) {
-    vmcs_pa = __pa(vmcs_region);
+    uint64_t vmcs_pa;
     uint8_t ret;
+    vmcs_pa = __pa(vmcs_region);
 
     asm volatile ("vmptrld %[pa]; setna %[ret]"
         : [ret]"=rm"(ret)
@@ -89,3 +92,5 @@ static inline uint64_t vmreadz(uint64_t encoding)
 	vmread(encoding, &value);
 	return value;
 }
+
+void __free_vmcs_region(uint64_t* vmcs_region);

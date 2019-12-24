@@ -31,7 +31,8 @@ static inline uint32_t vmcs_rev_id(void) {
     return ret;
 }
 
-int set_vmx_op(void);
+int set_vmx_op(uint64_t* vmxon_phy_region);
+void __free_vmxon_region(uint64_t* vmxon_region);
 void __vmxoff(void);
 
 

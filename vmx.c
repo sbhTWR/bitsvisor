@@ -1,6 +1,8 @@
 #include <asm/asm.h>
 #include <linux/gfp.h>
 #include <linux/slab.h>
+#include <linux/mm.h>
+#include <linux/types.h>
 #include "vmx.h"
 
 /**
@@ -226,7 +228,7 @@ static inline int __vmxon(uint64_t phya) {
  * Allocate VMXON region and execute VMXON
  */ 
 
-int set_vmx_op(void) {
+int set_vmx_op(uint64_t* vmxon_phy_region) {
     uint64_t phya; 
     uint32_t ret;
     int i=0;
@@ -235,8 +237,9 @@ int set_vmx_op(void) {
     __set_fixed_crx();
 
     ret = __alloc_vmxon_region(&phya);
-
     if (!ret) return 0; 
+
+    *vmxon_phy_region = phya;
    
    /* TODO: Although 90# of times this succeeds,
       figure out why vmxon does not succeed on the first
@@ -252,46 +255,13 @@ int set_vmx_op(void) {
 }
 
 /**
- * Allocates VMCS region.
- * [bits 30:0] revision identifier
- * [bit 31] shadow revision indicator
- * [byte offset 4 (to next 4 bytes)] VMX-abort indicator: A logical processor writes non-zero value in these bits if VM abort occurs
- * [byte offset 8] VMCS data (implementation-specific format)
+ * Free the allocated VXMON region
  */ 
 
-int __alloc_vmcs_region(uint64_t* vmcs_region) {
-    vmcs_region = kzalloc(CUST_PAGE_SIZE, GFP_KERNEL);
-    if (vmcs_region == NULL) {
-        printk(KERN_INFO "[BITSV] Error allocating VMCS region");
-        return 0;
+void __free_vmxon_region(uint64_t* vmxon_region) {
+    if (vmxon_region) {
+        kfree(vmxon_region);
     }
-    
-    /* [bits 31:0] */
-    *(uint32_t *)vmcs_region = vmcs_rev_id();
-
-    return 1;
-}
-
-/**
- * VMPTRLD - Load pointer to VMCS
- * Marks current-VMCS pointer valid and sets to the physical
- * address in the instruction operand. Fails if:
- * - operand is not properly aligned
- * - if unsupported physical-address bits are set
- * - if equal to the VMXON pointer
- * - revision identifier [bits 30:0] of the aligned memory do not match with process revision identifier
- */ 
-
-static inline int __vmptrld(uint64_t* vmcs_region) {
-    vmcs_pa = __pa(vmcs_region);
-    uint8_t ret;
-
-    asm volatile ("vmptrld %[pa]; setna %[ret]"
-        : [ret]"=rm"(ret)
-        : [pa]"m"(vmcs_pa)
-        : "cc", "memory");
-
-    return ret;    
 }
 
 /**

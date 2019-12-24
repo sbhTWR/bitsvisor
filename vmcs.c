@@ -1,4 +1,9 @@
 #include "vmcs.h"
+#include "vmx.h"
+#include <linux/gfp.h>
+#include <linux/slab.h>
+#include <linux/mm.h>
+#include <linux/types.h>
 
 /**
  * Allocates VMCS region.
@@ -19,6 +24,12 @@ int __alloc_vmcs_region(uint64_t* vmcs_region) {
     *(uint32_t *)vmcs_region = vmcs_rev_id();
 
     return 1;
+}
+
+void __free_vmcs_region(uint64_t* vmcs_region) {
+    if (vmcs_region) {
+        kfree(vmcs_region);
+    }
 }
 
 /**

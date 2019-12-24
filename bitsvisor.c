@@ -9,9 +9,14 @@
  */ 
 
 #include <linux/module.h>
+#include <linux/slab.h>
+#include <linux/mm.h>
 #include "vmx.h"
 
 static int bitsvisor_init(void) {
+    uint64_t vmxon_phy_region;
+    uint64_t* vmxon_region;
+
     printk(KERN_INFO "[BITSV] Starting BITSVISOR...\n");
 
     /* Check for VMX support */
@@ -22,15 +27,24 @@ static int bitsvisor_init(void) {
         return 0;
     }
 
-    if (!set_vmx_op()) {
+    if (!set_vmx_op(&vmxon_phy_region)) {
         printk(KERN_INFO "[BITSV] VMXON failed!");
         return 0;
     } else {
         printk(KERN_INFO "[BITSV] VMXON succeeded!");
     }
 
+    vmxon_region = __va(vmxon_phy_region);
+
     /* Exit VMX mode */
     __vmxoff();
+
+    printk(KERN_INFO "[BITSV] VMX mode exited");
+
+    /* Free the VMXON region */
+    __free_vmxon_region(vmxon_region);
+
+    printk(KERN_INFO "[BITSV] Freed 4kB memory allocated for VMXON region");
     return 0;
 }
 
