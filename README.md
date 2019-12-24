@@ -23,5 +23,5 @@ Not much yet. Can enter VMX mode and return from it as of now.
      -> define functions for accessing CR3 and CR4 registers.
      
      -> set various segment registers values.
- * Define functions for freeing allocated VMCS and VMXON regions using kfree()
+
 
